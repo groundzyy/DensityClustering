@@ -32,7 +32,7 @@ public class MatrixFileDistanceBuilder extends AbstractDistanceBuilder {
 	}
 
 	@Override
-	public ArrayList<Instance> calculateLocalDensityArray() {
+	public ArrayList<Instance> calculateLocalDensityArray(double distanceCutoff) {
 		// TODO Auto-generated method stub
 		return null;
 	}
@@ -48,6 +48,13 @@ public class MatrixFileDistanceBuilder extends AbstractDistanceBuilder {
 	public int getInstanceNumber() {
 		// TODO Auto-generated method stub
 		return 0;
+	}
+
+	@Override
+	public double[] calculateRhoBorder(ArrayList<Instance> instances,
+			int numOfCluster) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 

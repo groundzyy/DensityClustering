@@ -86,10 +86,12 @@ public class FileUtil {
 			distanceMatrix[(int) distRow[1] - minNum][(int) distRow[0] - minNum] = distRow[2];
 		}
 		
-		Collections.sort(distList);
-		System.out.println(distList.size());
-		int index = (int) (distList.size() * 0.02);
-		System.out.println(distList.get(index));
+		// the distance cutoff estimated in the matlab code is based on the values from this file only
+//		Collections.sort(distList);
+//		System.out.println(distList.size());
+//		int index = (int) (distList.size() * 0.02);
+//		System.out.println(distList.get(index));
+		
 		return distanceMatrix;
 	}
 

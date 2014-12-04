@@ -9,11 +9,13 @@ public interface DistanceBuilder {
 	public double estimateDistanceCutoff(double lower, double upper);
 	
 	// calculate the local density
-	public ArrayList<Instance> calculateLocalDensityArray();
+	public ArrayList<Instance> calculateLocalDensityArray(double distanceCutoff);
 	
 	// calculate the distance to the higher local density
 	public void calculateMinDistance2HigherLocalDensityArray(ArrayList<Instance> insts);
 	
 	// return the number of instance to cluster
 	public int getInstanceNumber();
+
+	public double[] calculateRhoBorder(ArrayList<Instance> instances, int numOfCluster);
 }
