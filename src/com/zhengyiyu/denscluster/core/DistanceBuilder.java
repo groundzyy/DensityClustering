@@ -18,4 +18,10 @@ public interface DistanceBuilder {
 	public int getInstanceNumber();
 
 	public double[] calculateRhoBorder(ArrayList<Instance> instances, int numOfCluster);
+	
+	public double getDistanceCutoff();
+
+	public void setDistanceCutoff(double distanceCutoff);
+	
+	public void setDensCalc(DensityCalculator densCalc);
 }

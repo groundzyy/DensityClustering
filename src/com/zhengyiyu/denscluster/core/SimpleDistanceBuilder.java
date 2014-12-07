@@ -81,29 +81,17 @@ public class SimpleDistanceBuilder extends AbstractDistanceBuilder {
 		});
 		Collections.reverse(insts);
 		
-		ArrayList<Instance> higherDensityInstList = new ArrayList<Instance>();
-		for (int index = 0; index < insts.size(); index++) {
-			Instance inst = insts.get(index);
-			if (index == 0) {
-				// max value
-				// actually the else section will do the same thing..
-				inst.setDelta(this.getMaxDistance());
-				inst.setClosestHigherDensityInstance(null);
-			} else {
-				// find the min distance with all instance with higher local density
-				double min = this.getMaxDistance();
-				double[] distRow = this.distanceMatrix[inst.getIndex()];
-				
-				for (Instance higherDensityInstance : higherDensityInstList) {
-					if (distRow[higherDensityInstance.getIndex()] < min) {
-						min = distRow[higherDensityInstance.getIndex()];
-						inst.setClosestHigherDensityInstance(higherDensityInstance);
-					}
-				}
-				inst.setDelta(min);
-			}
-			higherDensityInstList.add(inst);
+		double maxDelta = 0.0;
+		
+		for (int rhoIndex = 0; rhoIndex < insts.size(); rhoIndex++) {
+			double[] distRow = this.distanceMatrix[insts.get(rhoIndex).getIndex()];
+			maxDelta = calculateMinDistance2HigherDensityInstances(insts, rhoIndex, distRow, maxDelta);
 		}
+		
+		// In the matlab code, the delta for the point with highest rho are set as the largest delta for all the other points, 
+		// since this setting will not affect clustering decision, but make the decision chart better to inteprate.
+		
+		insts.get(0).setDelta(maxDelta);
 	}
 
 	@Override
@@ -112,10 +100,33 @@ public class SimpleDistanceBuilder extends AbstractDistanceBuilder {
 	}
 
 	@Override
-	public double[] calculateRhoBorder(ArrayList<Instance> instances,
-			int numOfCluster) {
-		// TODO Auto-generated method stub
-		return null;
+	public double[] calculateRhoBorder(ArrayList<Instance> instances, int numOfCluster) {
+		double[] rhoBorderArray = new double[numOfCluster];
+		
+		for (int i = 0; i < instances.size(); i++) {
+			Instance instA = instances.get(i);
+			
+			for (int j = i + 1; j < instances.size(); j++) {
+				Instance instB = instances.get(j);
+				
+				// the border regions for each cluster are defined as the set of points assigned to this cluster, 
+				// and be within a distance cutoff from points belonging to other clusters (thus all pairs of two points in different clusters will be checked)
+				// the border cutoff is defined by the point of highest density within its border region
+				// However in the matlab code provide by the authors, they used the average of the rho of two points as the border.
+				
+				if (instA.getClusterIndex() != instB.getClusterIndex() && distanceMatrix[i][j] < this.getDistanceCutoff()) {
+					double rhoAve = (instA.getRho() + instB.getRho()) / 2;
+					if (rhoAve > rhoBorderArray[instA.getClusterIndex()]) {
+						rhoBorderArray[instA.getClusterIndex()] = rhoAve;
+					}
+					
+					if (rhoAve > rhoBorderArray[instB.getClusterIndex()]) {
+						rhoBorderArray[instB.getClusterIndex()] = rhoAve;
+					}
+				}
+			}
+		}
+		return rhoBorderArray;
 	}
 
 }

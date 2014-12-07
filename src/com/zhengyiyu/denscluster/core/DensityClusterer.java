@@ -53,6 +53,7 @@ public class DensityClusterer {
 	 */
 	public void setDistanceCutoff(double distanceCutoff) {
 		this.distanceCutoff = distanceCutoff;
+		this.getDistanceBuilder().setDistanceCutoff(distanceCutoff);
 	}
 
 	/**
@@ -112,7 +113,7 @@ public class DensityClusterer {
 		ArrayList<ArrayList<Instance>> clusters = new ArrayList<ArrayList<Instance>>();
 		
 		for (Instance inst : instances) {
-			if (inst.getGamma() > gamma) {
+			if (inst.getGamma() >= gamma) {
 				ArrayList<Instance> cluster = new ArrayList<Instance>();
 				cluster.add(inst);
 				inst.setClusterIndex(clusters.size());
@@ -143,7 +144,7 @@ public class DensityClusterer {
 		ArrayList<ArrayList<Instance>> clusters = new ArrayList<ArrayList<Instance>>();
 		
 		for (Instance inst : instances) {
-			if (inst.getRho() > rhoCutoff && inst.getDelta() > deltaCutoff) {
+			if (inst.getRho() >= rhoCutoff && inst.getDelta() >= deltaCutoff) {
 				ArrayList<Instance> cluster = new ArrayList<Instance>();
 				cluster.add(inst);
 				inst.setClusterIndex(clusters.size());
@@ -187,6 +188,8 @@ public class DensityClusterer {
 				ArrayList<Instance> cluster = clusters.get(clusterIndex);
 				bw.write("#cluster " + clusterIndex + "\tinstances: " +  cluster.size());
 				bw.newLine();
+
+				System.out.println("cluster " + clusterIndex + "\tinstances: " +  cluster.size());
 				for (int i = 0; i < cluster.size(); i++) {
 					Instance inst = cluster.get(i);
 					bw.write(inst.getIndex() + "\t" + inst.getClusterIndex() + "\t" + (inst.isHalo() ? "Halo" : "Core"));
