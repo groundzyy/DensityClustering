@@ -179,6 +179,25 @@ public class DensityClusterer {
 			}
 		}
 	}
+	
+	public void saveCluster(String resultFilePath) {
+		try {
+			BufferedWriter bw = new BufferedWriter(new FileWriter(resultFilePath));
+			bw.write("#Instances: " + instances.size());
+			bw.newLine();
+			
+			bw.write("#Distance Cutoff: " + distanceCutoff);
+			
+			for (int instIndex = 0; instIndex < instances.size(); instIndex++) {
+				Instance inst = instances.get(instIndex);
+				bw.write(instIndex + "\t" + inst.getRho() + "\t" + inst.getDelta());
+				bw.newLine();
+			}
+			bw.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 
 	public void recordCluster(ArrayList<ArrayList<Instance>> clusters, String resultFilePath) {
 		try {
@@ -192,7 +211,7 @@ public class DensityClusterer {
 				System.out.println("cluster " + clusterIndex + "\tinstances: " +  cluster.size());
 				for (int i = 0; i < cluster.size(); i++) {
 					Instance inst = cluster.get(i);
-					bw.write(inst.getIndex() + "\t" + inst.getClusterIndex() + "\t" + (inst.isHalo() ? "Halo" : "Core"));
+					bw.write(inst.getIndex() + "\t" + inst.getClusterIndex() + "\t" + (inst.isHalo() ? "Halo" : "Core" + "\t" + inst.getRho() + "\t" + inst.getDelta()));
 					bw.newLine();
 				}
 			}

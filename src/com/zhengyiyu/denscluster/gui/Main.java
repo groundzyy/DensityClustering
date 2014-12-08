@@ -171,6 +171,8 @@ public class Main {
 				}
 				
 				int fileType = FileUtil.determinFileType(matrixFile);
+				
+				System.out.println("File Type : " + fileType);
 				if (fileType == 0) {
 					double[][] distMatrix = FileUtil.load3ColumnDistanceMatrix(matrixFile.getAbsolutePath(), new ArrayList<String>());
 					dClusterer = new DensityClusterer();

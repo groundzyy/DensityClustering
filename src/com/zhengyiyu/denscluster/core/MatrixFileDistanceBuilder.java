@@ -1,11 +1,13 @@
 package com.zhengyiyu.denscluster.core;
 
+import java.beans.DesignMode;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 
 import com.zhengyiyu.denscluster.util.Common;
@@ -34,6 +36,83 @@ public class MatrixFileDistanceBuilder extends AbstractDistanceBuilder {
 	private long numOfDistanceCount;
 
 	public MatrixFileDistanceBuilder(String filePath, DensityCalculator densCalc) {
+		this(filePath, densCalc, true);
+//		super(densCalc);
+//		this.matrixFilePath = filePath;
+//		
+//		// first time read the file, also scan the whole file for the max and min for estimate distance cutoff
+//		// set the size of the instances by reading the first line
+//		
+//		int lineCount = 0;
+//		numOfDistanceCount = 0;
+//		
+//		System.out.println("First Round Loading the file : try to get the max");
+//		try {
+//			minDistance = Double.MAX_VALUE;
+//			maxDistance = 0.0;
+//			
+//			BufferedReader br = new BufferedReader(new FileReader(matrixFilePath));
+//			
+//			String line = "";
+//			String[] splited = null;
+//			
+//			while ((line = br.readLine()) != null) {
+//				if (line.startsWith("#")) {
+//					continue;
+//				}
+//				
+//				splited = line.split(Common.SplitPattern_Blank);
+//				
+//				if (lineCount == 0) {
+//					this.numOfInstance = splited.length;
+//				}
+//				
+//				numOfDistanceCount += splited.length;
+//				
+//				for (String s : splited) {
+//					double d = Double.parseDouble(s);
+//					if (d > maxDistance) {
+//						maxDistance = d;
+//					}
+//					
+//					if (d < minDistance) {
+//						minDistance = d;
+//					}
+//				}
+//				
+//				lineCount++;
+//				
+//				if (lineCount % 500 == 0) {
+//					System.out.print(".");
+//				}
+//			}
+//			
+//			System.out.println();
+//			
+//			br.close();
+//		} catch (NumberFormatException e) {
+//			e.printStackTrace();
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//		}
+//		
+//		if (lineCount != this.numOfInstance) {
+//			System.out.println("The matrix file is not N * N, but " + this.numOfInstance + " * " + lineCount);
+//		}
+//		
+//		long totalNumInTheroy = (long) lineCount * lineCount;
+//		
+//		if (this.numOfDistanceCount != totalNumInTheroy) {
+//			System.out.println("The matrix file is not N * N, we only have " + numOfDistanceCount + " distance values while should be " + totalNumInTheroy);
+//		}
+//		
+//		System.out.println(this.numOfDistanceCount);
+//		System.out.println(this.numOfInstance);
+//		
+//		System.out.println("Max : " + maxDistance + ", Min : " + minDistance);
+	}
+	
+	public MatrixFileDistanceBuilder(String filePath, DensityCalculator densCalc, boolean scanForMaxMin) {
 		super(densCalc);
 		this.matrixFilePath = filePath;
 		
@@ -42,10 +121,12 @@ public class MatrixFileDistanceBuilder extends AbstractDistanceBuilder {
 		
 		int lineCount = 0;
 		numOfDistanceCount = 0;
+		
 		try {
 			minDistance = Double.MAX_VALUE;
 			maxDistance = 0.0;
 			
+			System.out.print("Scan Distance Matrix File ");
 			BufferedReader br = new BufferedReader(new FileReader(matrixFilePath));
 			
 			String line = "";
@@ -56,10 +137,15 @@ public class MatrixFileDistanceBuilder extends AbstractDistanceBuilder {
 					continue;
 				}
 				
-				splited = line.split(Common.SplitPattern_Tab);
+				splited = line.split(Common.SplitPattern_Blank);
 				
 				if (lineCount == 0) {
 					this.numOfInstance = splited.length;
+					
+					if (scanForMaxMin == false) {
+						// the only thing we need is how many instance in the first row
+						break;
+					}
 				}
 				
 				numOfDistanceCount += splited.length;
@@ -76,7 +162,13 @@ public class MatrixFileDistanceBuilder extends AbstractDistanceBuilder {
 				}
 				
 				lineCount++;
+				
+				if (lineCount % 500 == 0) {
+					System.out.print(".");
+				}
 			}
+			
+			System.out.println();
 			
 			br.close();
 		} catch (NumberFormatException e) {
@@ -85,15 +177,25 @@ public class MatrixFileDistanceBuilder extends AbstractDistanceBuilder {
 			e.printStackTrace();
 		}
 		
-		if (lineCount != this.numOfInstance) {
-			System.out.println("The matrix file is not N * N, but " + this.numOfInstance + " * " + lineCount);
+		if (scanForMaxMin == true) {
+			// we want also to check whether it is an N * N matrix
+			if (lineCount != this.numOfInstance) {
+				System.out.println("The matrix file is not N * N, but " + this.numOfInstance + " * " + lineCount);
+			}
+			
+			long totalNumInTheroy = (long) lineCount * lineCount;
+			
+			if (this.numOfDistanceCount != totalNumInTheroy) {
+				System.out.println("The matrix file is not N * N, we only have " + numOfDistanceCount + " distance values while should be " + totalNumInTheroy);
+			}
+		} else {
+			// we simply set the total number to N * N
+			this.numOfDistanceCount = (long) this.numOfInstance * this.numOfInstance;
 		}
 		
-		long totalNumInTheroy = (long) lineCount * lineCount;
-		
-		if (this.numOfDistanceCount != totalNumInTheroy) {
-			System.out.println("The matrix file is not N * N, we only have " + numOfDistanceCount + " distance values while should be " + totalNumInTheroy);
-		}
+		System.out.println("# of Dinstance Count : " + this.numOfDistanceCount);
+		System.out.println("# of Instance " + this.numOfInstance);
+		System.out.println("Max : " + maxDistance + ", Min : " + minDistance);
 	}
 
 	/**
@@ -129,20 +231,29 @@ public class MatrixFileDistanceBuilder extends AbstractDistanceBuilder {
 	public double estimateDistanceCutoff(double lower, double upper) {
 		// this will need to read the file multiple times
 		
-		if ((lower - upper) / upper < 0.1) {
+		if ((upper - lower) / upper < 0.1) {
 			// too close
-			upper = lower * 1.1;
+			lower = upper * 0.9;
 		}
 		
 		System.out.println("Trying to find neighbour rate between " + lower + " and " + upper);
 
 		double distanceCutoff = this.minDistance;
 		double epi = (this.minDistance + this.maxDistance) * 0.01;
-
+		
+		distanceCutoff = 0.31;
+		epi = 0.02;
+		
+		System.out.println("EPI:" + epi);
+		
 		int iteration = 1;
+		
 		while (true) {
+			System.out.println(Common.dateFormat.format(new Date()));
 			double neighbourRate = getNeighbourRate(distanceCutoff);
 			
+			System.out.println("Iteration " + iteration++ + "\t" + "distance cutoff : " + distanceCutoff + "\tepi : " + epi + "\tneighbour rate : " + neighbourRate);
+
 			if (neighbourRate >= lower && neighbourRate <= upper) {
 				break;
 			}
@@ -156,14 +267,15 @@ public class MatrixFileDistanceBuilder extends AbstractDistanceBuilder {
 				distanceCutoff = distanceCutoff + epi;
 			}
 			
-			System.out.println("Iteration " + iteration++ + "\t" + "distance cutoff : " + distanceCutoff + "\tepi : " + epi + "\tneighbour rate : " + neighbourRate);
 		}
 		 
 		return distanceCutoff;
 	}
 
 	private double getNeighbourRate(double distanceCutoff) {
-		int neighbourCount = 0;
+		long neighbourCount = 0;
+		
+		int count = 0;
 		
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(matrixFilePath));
@@ -176,7 +288,7 @@ public class MatrixFileDistanceBuilder extends AbstractDistanceBuilder {
 					continue;
 				}
 				
-				splited = line.split(Common.SplitPattern_Tab);
+				splited = line.split(Common.SplitPattern_Blank);
 				
 				for (String s : splited) {
 					double d = Double.parseDouble(s);
@@ -184,6 +296,11 @@ public class MatrixFileDistanceBuilder extends AbstractDistanceBuilder {
 					if (d < distanceCutoff) {
 						neighbourCount++;
 					}
+				}
+				
+				count++;
+				if (count % 500 == 0) {
+					System.out.print(".");
 				}
 			}
 			
@@ -193,6 +310,8 @@ public class MatrixFileDistanceBuilder extends AbstractDistanceBuilder {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		
+		System.out.println("\t" + neighbourCount + "\t" + this.numOfDistanceCount + "\t" + neighbourCount * 1.0 / this.numOfDistanceCount);
 		return neighbourCount * 1.0 / this.numOfDistanceCount;
 	}
 
@@ -213,7 +332,7 @@ public class MatrixFileDistanceBuilder extends AbstractDistanceBuilder {
 					continue;
 				}
 				
-				splited = line.split(Common.SplitPattern_Tab);
+				splited = line.split(Common.SplitPattern_Blank);
 				double[] distRow = new double[splited.length];
 				for (int i = 0; i < splited.length; i++) {
 					distRow[i] = Double.parseDouble(splited[i]);
@@ -267,7 +386,7 @@ public class MatrixFileDistanceBuilder extends AbstractDistanceBuilder {
 					continue;
 				}
 				
-				splited = line.split(Common.SplitPattern_Tab);
+				splited = line.split(Common.SplitPattern_Blank);
 				double[] distRow = new double[splited.length];
 				for (int i = 0; i < splited.length; i++) {
 					distRow[i] = Double.parseDouble(splited[i]);
@@ -319,7 +438,7 @@ public class MatrixFileDistanceBuilder extends AbstractDistanceBuilder {
 					continue;
 				}
 				
-				splited = line.split(Common.SplitPattern_Tab);
+				splited = line.split(Common.SplitPattern_Blank);
 				double[] distRow = new double[splited.length];
 				for (int i = 0; i < splited.length; i++) {
 					distRow[i] = Double.parseDouble(splited[i]);

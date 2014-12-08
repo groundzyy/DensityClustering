@@ -1,6 +1,10 @@
 package com.zhengyiyu.denscluster.util;
 
+import java.text.SimpleDateFormat;
+
 public class Common {
+	public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	
 	public static final String LinuxLine = "\n";
 
 	/**
