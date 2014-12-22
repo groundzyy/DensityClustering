@@ -89,12 +89,13 @@ public class Main {
 		densityCalList.add(new CutoffDensityCalculator());
 		densityCalList.add(new GaussianKernalDensityCalculator());
 		
-		initialize();
 		inputFC = new JFileChooser();
 		inputFC.setCurrentDirectory(lastFile);
 		
 		outputFC = new JFileChooser("Save File");
 		outputFC.setCurrentDirectory(lastFile);
+		
+		initialize();
 		
 		disableButton(0);
 	}
@@ -137,7 +138,7 @@ public class Main {
 		filePathTextField = new JTextField();
 		filePathTextField.setBounds(10, 47, 196, 20);
 		step1Panel.add(filePathTextField);
-		filePathTextField.setText("D:\\workspace_java\\DensityClustering\\sample\\example_distances.dat");
+		filePathTextField.setText("");
 		filePathTextField.setEditable(false);
 		filePathTextField.setColumns(10);
 		
