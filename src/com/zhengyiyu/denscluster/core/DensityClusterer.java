@@ -1,9 +1,13 @@
 package com.zhengyiyu.denscluster.core;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+
+import com.zhengyiyu.denscluster.util.Common;
 
 public class DensityClusterer {
 	/**
@@ -187,6 +191,7 @@ public class DensityClusterer {
 			bw.newLine();
 			
 			bw.write("#Distance Cutoff: " + distanceCutoff);
+			bw.newLine();
 			
 			for (int instIndex = 0; instIndex < instances.size(); instIndex++) {
 				Instance inst = instances.get(instIndex);
@@ -220,5 +225,37 @@ public class DensityClusterer {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public static DensityClusterer loadCluster(String string) {
+		DensityClusterer dClusterer = new DensityClusterer();
+		ArrayList<Instance> instances = new ArrayList<Instance>();
+		
+		try {
+			BufferedReader br = new BufferedReader(new FileReader(string));
+			
+			String line = "";
+			String[] splited = null;
+			
+			while ((line = br.readLine()) != null) {
+				if ((line.startsWith("#"))) {
+					continue;
+				}
+				
+				// 0	6884.67814206553	0.39
+				splited = line.split(Common.SplitPattern_Tab);
+				Instance inst = new Instance(Integer.parseInt(splited[0]), Double.parseDouble(splited[1]));
+				inst.setDelta(Double.parseDouble(splited[2]));
+				instances.add(inst);
+			}
+			
+			br.close();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		
+		dClusterer.setInstances(instances);
+		return dClusterer;
 	}
 }
