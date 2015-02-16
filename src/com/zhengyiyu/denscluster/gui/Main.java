@@ -371,6 +371,7 @@ public class Main {
 						rhoDeltaCutoff[0] = (Double) rhoDeltaDecisionGraph.getRhoSpinner().getValue();
 						rhoDeltaCutoff[1] = (Double) rhoDeltaDecisionGraph.getDeltaSpinner().getValue();
 						
+						System.out.println(rhoDeltaCutoff[0] + "\t" + rhoDeltaCutoff[1]);
 						ArrayList<ArrayList<Instance>> clusters2 = dClusterer.cluster(rhoDeltaCutoff[0], rhoDeltaCutoff[1]);
 						dClusterer.recordCluster(clusters2, output.getAbsolutePath());
 					}

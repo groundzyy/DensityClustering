@@ -28,9 +28,13 @@ public class SimpleDistanceBuilder extends AbstractDistanceBuilder {
 		// however, here only the mean is needed and if the mean is out of range (0, 1), the default value is used
 		
 		ArrayList<Double> doubleList = new ArrayList<Double>();
-		for (double[] distRow : distanceMatrix) {
-			for (double dist : distRow) {
-				doubleList.add(dist);
+		for (int rowIndex = 0; rowIndex < distanceMatrix.length; rowIndex++) {
+			double[] distRow = distanceMatrix[rowIndex];
+			for (int columnIndex = 0; columnIndex < distRow.length; columnIndex++) {
+				// distance for the same item should be 0, and are not considered here
+				if (columnIndex != rowIndex) {
+					doubleList.add(distRow[columnIndex]);
+				}
 			}
 		}
 		
